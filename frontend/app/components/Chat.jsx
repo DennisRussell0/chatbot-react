@@ -1,15 +1,15 @@
-function Message(props) {
+function Message({ type = "user", children }) {
   return (
-    <div className={`message ${props.type}-message`}>
-      <div className="message-content">{props.children}</div>
+    <div className={`message ${type}-message`}>
+      <div className="message-content">{children}</div>
     </div>
   );
 }
 
-function ChatMessages(props) {
+function ChatMessages({ messages = [] }) {
   return (
     <div className="chat-messages">
-      {props.messages.map((message) => (
+      {messages.map((message) => (
         <Message key={message.id} type={message.type}>
           {message.content}
         </Message>
