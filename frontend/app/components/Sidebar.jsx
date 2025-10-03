@@ -9,20 +9,17 @@ function SidebarHeader() {
   );
 }
 
-function ChatThreadItem({ thread }) {
+function ChatThreadItem({ thread, onDeleteThread }) {
   const { id, href, title } = thread;
 
   const handleDeleteClick = (event) => {
     event.stopPropagation();
 
-    console.log("Delete button clicked for thread:", {
-      id: id,
-      href: href,
-      title: title,
-      element: event.target,
-      timestamp: new Date().toISOString(),
-    });
+    if (onDeleteThread) {
+      onDeleteThread(id);
+    }
   };
+
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
@@ -43,16 +40,15 @@ function ChatThreadItem({ thread }) {
   );
 }
 
-function ChatThreadList({ threads = [] }) {
+function ChatThreadList({ threads = [], onDeleteThread }) {
   return (
     <nav className="chat-threads-list" aria-label="Chat threads">
       <ul>
         {threads.map((thread) => (
           <ChatThreadItem
             key={thread.id}
-            href={thread.href}
-            title={thread.title}
             thread={thread}
+            onDeleteThread={onDeleteThread}
           />
         ))}
       </ul>
@@ -77,11 +73,11 @@ function SidebarFooter() {
   );
 }
 
-export default function Sidebar({ threads }) {
+export default function Sidebar({ threads, onDeleteThread }) {
   return (
     <aside className="sidebar">
       <SidebarHeader />
-      <ChatThreadList threads={threads} />
+      <ChatThreadList threads={threads} onDeleteThread={onDeleteThread} />
       <SidebarFooter />
     </aside>
   );
