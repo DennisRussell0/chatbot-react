@@ -9,7 +9,20 @@ function SidebarHeader() {
   );
 }
 
-function ChatThreadItem({ href, title }) {
+function ChatThreadItem({ thread }) {
+  const { id, href, title } = thread;
+
+  const handleDeleteClick = (event) => {
+    event.stopPropagation();
+
+    console.log("Delete button clicked for thread:", {
+      id: id,
+      href: href,
+      title: title,
+      element: event.target,
+      timestamp: new Date().toISOString(),
+    });
+  };
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
@@ -21,6 +34,7 @@ function ChatThreadItem({ href, title }) {
           aria-label={`Delete thread: ${title}`}
           title="Delete this conversation"
           type="button"
+          onClick={handleDeleteClick}
         >
           &times;
         </button>
@@ -38,6 +52,7 @@ function ChatThreadList({ threads = [] }) {
             key={thread.id}
             href={thread.href}
             title={thread.title}
+            thread={thread}
           />
         ))}
       </ul>
