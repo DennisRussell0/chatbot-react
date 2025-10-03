@@ -12,9 +12,19 @@ function SidebarHeader() {
 function ChatThreadItem({ href, title }) {
   return (
     <li className="chat-thread-item">
-      <a href={href} className="chat-thread-link">
-        {title}
-      </a>
+      <div className="chat-thread-item-content">
+        <a href={href} className="chat-thread-link">
+          {title}
+        </a>
+        <button
+          className="delete-thread-btn"
+          aria-label={`Delete thread: ${title}`}
+          title="Delete this conversation"
+          type="button"
+        >
+          &times;
+        </button>
+      </div>
     </li>
   );
 }
