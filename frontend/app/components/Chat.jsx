@@ -20,13 +20,26 @@ function ChatMessages({ messages = [] }) {
   );
 }
 
-function ChatInput() {
+function ChatInput({ onAddMessage }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const formData = new FormData(event.target);
+    const message = formData.get("message").trim();
+
+    if (!message) {
+      return;
+    }
+
     setIsSubmitting(true);
+
+    if (onAddMessage) {
+      onAddMessage(message);
+    }
+
+    event.target.reset();
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -37,6 +50,7 @@ function ChatInput() {
     <div className="chat-input-container">
       <form className="chat-input-wrapper" onSubmit={handleSubmit}>
         <textarea
+          name="message"
           className="chat-input"
           placeholder="Type your message here..."
           rows="1"
