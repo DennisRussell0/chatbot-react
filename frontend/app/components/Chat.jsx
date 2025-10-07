@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function Message({ type = "user", children }) {
   return (
     <div className={`message ${type}-message`}>
@@ -19,18 +21,30 @@ function ChatMessages({ messages = [] }) {
 }
 
 function ChatInput() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   return (
     <div className="chat-input-container">
-      <div className="chat-input-wrapper">
+      <form className="chat-input-wrapper" onSubmit={handleSubmit}>
         <textarea
           className="chat-input"
           placeholder="Type your message here..."
           rows="1"
         />
-        <button className="send-button" type="button">
-          Send
+        <button className="send-button" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Sending..." : "Send"}
         </button>
-      </div>
+      </form>
     </div>
   );
 }
