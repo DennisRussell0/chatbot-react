@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { href, Link } from "react-router";
+import { href, Link, NavLink } from "react-router";
 
 function SidebarHeader() {
   return (
@@ -26,12 +26,16 @@ function ChatThreadItem({ thread, onDeleteThread }) {
   return (
     <li className="chat-thread-item">
       <div className="chat-thread-item-content">
-        <Link
+        <NavLink
           to={href("chat/:threadId", { threadId: id })}
-          className="chat-thread-link"
+          className={({ isActive }) =>
+            isActive
+              ? "chat-thread-link chat-thread-link-active"
+              : "chat-thread-link"
+          }
         >
           {title}
-        </Link>
+        </NavLink>
         <button
           className="delete-thread-btn"
           aria-label={`Delete thread: ${title}`}
