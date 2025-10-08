@@ -2,64 +2,25 @@ import { useLoaderData, Outlet } from "react-router";
 import Sidebar from "../components/Sidebar";
 
 export async function clientLoader() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  const mockThreads = [
-    {
-      id: "1",
-      title: "How to learn programming?",
-    },
-    {
-      id: "2",
-      title: "What are the best pizza toppings?",
-    },
-    {
-      id: "3",
-      title: "Can you explain quantum physics?",
-    },
-    {
-      id: "4",
-      title: "Help me create a morning routine",
-    },
-    {
-      id: "5",
-      title: "What should I do this weekend?",
-    },
-    { id: "6", href: "/chat/why-sky-blue", title: "Why is the sky blue?" },
-    {
-      id: "7",
-      title: "How do I learn a new language?",
-    },
-    {
-      id: "8",
-      title: "What's the meaning of life?",
-    },
-    { id: "9", title: "Tell me a funny joke" },
-    {
-      id: "10",
-      title: "What's a healthy dinner idea?",
-    },
-    {
-      id: "11",
-      title: "Recommend me a good book",
-    },
-    {
-      id: "12",
-      title: "Give me a creative writing prompt",
-    },
-    {
-      id: "13",
-      title: "My computer is slow, help?",
-    },
-    {
-      id: "14",
-      title: "Tell me an interesting history fact",
-    },
-  ];
+  const url = `${supabaseUrl}/rest/v1/threads?select=*&order=created_at.desc`;
 
-  return {
-    threads: mockThreads,
-  };
+  const response = await fetch(url, {
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch threads: ${response.status}`);
+  }
+
+  const threads = await response.json();
+
+  return { threads };
 }
 
 export default function Layout() {
