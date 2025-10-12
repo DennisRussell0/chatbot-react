@@ -43,6 +43,36 @@ export async function clientLoader({ params }) {
   return { thread, messages };
 }
 
+export async function clientAction({ params, request }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const formData = await request.formData();
+  const content = formData.get("message");
+
+  const newMessage = {
+    thread_id: params.threadId,
+    type: "user",
+    content: content,
+  };
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newMessage),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create message: ${response.status}`);
+  }
+
+  return { success: true };
+}
+
 export default function ChatThread() {
   const { thread, messages } = useLoaderData();
 
@@ -57,7 +87,7 @@ export default function ChatThread() {
         <h2>{thread.title}</h2>
       </div>
       <ChatMessages messages={messages} />
-      <ChatInput onAddMessage={addMessage} />
+      <ChatInput />
     </main>
   );
 }

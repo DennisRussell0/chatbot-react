@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Form } from "react-router";
 
 function Message({ type = "user", children }) {
   return (
@@ -20,45 +21,21 @@ function ChatMessages({ messages = [] }) {
   );
 }
 
-function ChatInput({ onAddMessage }) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    const message = formData.get("message").trim();
-
-    if (!message) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    if (onAddMessage) {
-      onAddMessage(message);
-    }
-
-    event.target.reset();
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 1000);
-  };
-
+function ChatInput() {
   return (
     <div className="chat-input-container">
-      <form className="chat-input-wrapper" onSubmit={handleSubmit}>
+      <Form className="chat-input-wrapper" method="post">
         <textarea
           name="message"
           className="chat-input"
           placeholder="Type your message here..."
           rows="1"
+          required
         />
-        <button className="send-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Sending..." : "Send"}
+        <button className="send-button" type="submit">
+          Send
         </button>
-      </form>
+      </Form>
     </div>
   );
 }
