@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { href, Link, NavLink } from "react-router";
+import { href, Link, NavLink, useFetcher } from "react-router";
 
 function SidebarHeader() {
   return (
@@ -12,16 +12,11 @@ function SidebarHeader() {
   );
 }
 
-function ChatThreadItem({ thread, onDeleteThread }) {
+function ChatThreadItem({ thread }) {
   const { id, title } = thread;
-
-  const handleDeleteClick = (event) => {
-    event.stopPropagation();
-
-    if (onDeleteThread) {
-      onDeleteThread(id);
-    }
-  };
+  const fetcher = useFetcher();
+  const isDeleting =
+    fetcher.state !== "idle" && fetcher.formData?.get("threadId") === id;
 
   return (
     <li className="chat-thread-item">
@@ -40,21 +35,25 @@ function ChatThreadItem({ thread, onDeleteThread }) {
         >
           {title}
         </NavLink>
-        <button
-          className="delete-thread-btn"
-          aria-label={`Delete thread: ${title}`}
-          title="Delete this conversation"
-          type="button"
-          onClick={handleDeleteClick}
-        >
-          &times;
-        </button>
+        <fetcher.Form method="post">
+          <input type="hidden" name="intent" value="delete" />
+          <input type="hidden" name="threadId" value={id} />
+          <button
+            className="delete-thread-btn"
+            aria-label={`Delete thread: ${title}`}
+            title="Delete this conversation"
+            type="submit"
+            disabled={isDeleting}
+          >
+            {isDeleting ? "···" : "×"}
+          </button>
+        </fetcher.Form>
       </div>
     </li>
   );
 }
 
-function ChatThreadList({ threads = [], onDeleteThread }) {
+function ChatThreadList({ threads = [] }) {
   const [searchValue, setSearchValue] = useState("");
 
   const handleSearchChange = (event) => {
@@ -78,11 +77,7 @@ function ChatThreadList({ threads = [], onDeleteThread }) {
       </div>
       <ul>
         {filteredThreads.map((thread) => (
-          <ChatThreadItem
-            key={thread.id}
-            thread={thread}
-            onDeleteThread={onDeleteThread}
-          />
+          <ChatThreadItem key={thread.id} thread={thread} />
         ))}
       </ul>
     </nav>
@@ -110,7 +105,7 @@ export default function Sidebar({ threads, onDeleteThread }) {
   return (
     <aside className="sidebar">
       <SidebarHeader />
-      <ChatThreadList threads={threads} onDeleteThread={onDeleteThread} />
+      <ChatThreadList threads={threads} />
       <SidebarFooter />
     </aside>
   );

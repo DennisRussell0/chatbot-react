@@ -23,17 +23,46 @@ export async function clientLoader() {
   return { threads };
 }
 
+export async function clientAction({ request }) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+  const threadId = formData.get("threadId");
+
+  if (intent === "delete" && threadId) {
+    try {
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/threads?id=eq.${threadId}`,
+        {
+          method: "DELETE",
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        return { error: `Failed to delete thread: ${response.status}` };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
+  return null;
+}
+
 export default function Layout() {
   const { threads } = useLoaderData();
 
-  const deleteThread = (threadId) => {
-    console.log("Layout: Deleting thread with ID:", threadId);
-    console.log("Mutations will be implemented later");
-  };
-
   return (
     <div className="app-layout">
-      <Sidebar threads={threads} onDeleteThread={deleteThread} />
+      <Sidebar threads={threads} />
       <main className="main-content">
         <Outlet />
       </main>
