@@ -1,5 +1,33 @@
-import { useLoaderData, useActionData } from "react-router";
+import {
+  useLoaderData,
+  useActionData,
+  useRouteError,
+  Link,
+  href,
+} from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  const isNotFound = error?.status === 404;
+
+  return (
+    <div className="chat-container">
+      <div className="chat-thread-header">
+        <h2>{isNotFound ? "Thread Not Found" : "Something Went Wrong"}</h2>
+        <p>
+          {isNotFound
+            ? "This conversation may have been deleted or never existed."
+            : error?.message || "An unexpected error occurred."}
+        </p>
+        <p>
+          <Link to={href("/chat/new")}>Start a new chat</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export async function clientLoader({ params }) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
