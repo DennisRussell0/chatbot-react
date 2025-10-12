@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useActionData } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 
 export async function clientLoader({ params }) {
@@ -50,31 +50,41 @@ export async function clientAction({ params, request }) {
   const formData = await request.formData();
   const content = formData.get("message");
 
+  if (!content || !content.trim()) {
+    return { error: "Message cannot be empty." };
+  }
+
   const newMessage = {
     thread_id: params.threadId,
     type: "user",
-    content: content,
+    content: content.trim(),
   };
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-    method: "POST",
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newMessage),
-  });
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newMessage),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to create message: ${response.status}`);
+    if (!response.ok) {
+      return { error: `Failed to create message: ${response.status}` };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { error: error.message };
   }
-
-  return { success: true };
 }
 
 export default function ChatThread() {
   const { thread, messages } = useLoaderData();
+
+  const actionData = useActionData();
 
   const addMessage = (content) => {
     console.log("Message submitted:", content);
@@ -88,6 +98,9 @@ export default function ChatThread() {
       </div>
       <ChatMessages messages={messages} />
       <ChatInput />
+      {actionData?.error && (
+        <div className="error-message">{actionData.error}</div>
+      )}
     </main>
   );
 }
