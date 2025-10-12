@@ -86,11 +86,6 @@ export default function ChatThread() {
 
   const actionData = useActionData();
 
-  const addMessage = (content) => {
-    console.log("Message submitted:", content);
-    console.log("Data mutations will be implemented later");
-  };
-
   return (
     <main className="chat-container">
       <div className="chat-thread-header">
