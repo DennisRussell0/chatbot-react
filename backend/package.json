@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "typ": "module",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env server.js",
@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "Express API for chatbot application",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "postgres": "^3.4.7"
   }
 }
