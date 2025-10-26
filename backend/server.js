@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-app.get("/", async (req, res) => {
+app.get("/api/threads", async (req, res) => {
   try {
     const threads = await sql`
       SELECT id, title, created_at

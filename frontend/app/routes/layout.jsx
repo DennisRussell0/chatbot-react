@@ -1,18 +1,12 @@
 import { useLoaderData, Outlet } from "react-router";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Sidebar.jsx";
 
 export async function clientLoader() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
-  const url = `${supabaseUrl}/rest/v1/threads?select=*&order=created_at.desc`;
+  const url = `${apiUrl}/api/threads`;
 
-  const response = await fetch(url, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-  });
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch threads: ${response.status}`);
