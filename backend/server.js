@@ -7,6 +7,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Chatbot API Server",
+    version: "1.0.0",
+  });
+});
+
 app.get("/api/threads", async (req, res) => {
   try {
     const threads = await sql`
