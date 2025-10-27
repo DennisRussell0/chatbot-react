@@ -18,8 +18,7 @@ export async function clientLoader() {
 }
 
 export async function clientAction({ request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const formData = await request.formData();
   const intent = formData.get("intent");
@@ -27,16 +26,9 @@ export async function clientAction({ request }) {
 
   if (intent === "delete" && threadId) {
     try {
-      const response = await fetch(
-        `${supabaseUrl}/rest/v1/threads?id=eq.${threadId}`,
-        {
-          method: "DELETE",
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-          },
-        },
-      );
+      const response = await fetch(`${apiUrl}/api/threads/${threadId}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         return { error: `Failed to delete thread: ${response.status}` };
