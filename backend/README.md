@@ -76,6 +76,69 @@ Fetches all chat threads, ordered by creation date (newest first).
 ]
 ```
 
+### POST /api/threads
+
+Creates a new thread with an initial message. This is a compound operation that creates both the thread and its first message in a single request.
+
+**Request Body:**
+
+```json
+{
+  "title": "Thread title",
+  "content": "First message content"
+}
+```
+
+**Request Body Fields:**
+
+- `title` (required) - The thread title (cannot be empty)
+- `content` (required) - The initial message text (cannot be empty)
+
+**Response (201 Created):**
+
+```json
+{
+  "thread": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Thread title",
+    "created_at": "2025-10-13T10:30:00Z"
+  },
+  "message": {
+    "id": "789e4567-e89b-12d3-a456-426614174000",
+    "thread_id": "123e4567-e89b-12d3-a456-426614174000",
+    "type": "user",
+    "content": "First message content",
+    "created_at": "2025-10-13T10:30:00Z"
+  }
+}
+```
+
+**Response (400 Bad Request):**
+
+```json
+{
+  "error": "Both 'title' and 'content' are required"
+}
+```
+
+or
+
+```json
+{
+  "error": "Title cannot be empty"
+}
+```
+
+or
+
+```json
+{
+  "error": "Content cannot be empty"
+}
+```
+
+**Note:** This endpoint performs two database operations: it creates the thread first, then creates the initial message. Both operations are done in sequence within the same request to ensure consistency.
+
 ### POST /api/threads/:id/messages
 
 Creates a new message in a thread.
@@ -171,6 +234,21 @@ curl http://localhost:3000/
 
 # Get all threads
 curl http://localhost:3000/api/threads
+
+# Create a new thread with initial message (POST request)
+curl -X POST http://localhost:3000/api/threads \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My new thread","content":"This is the first message"}'
+
+# Test validation - missing content (should return 400)
+curl -X POST http://localhost:3000/api/threads \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Thread without message"}'
+
+# Test validation - empty title (should return 400)
+curl -X POST http://localhost:3000/api/threads \
+  -H "Content-Type: application/json" \
+  -d '{"title":"   ","content":"Message with empty title"}'
 
 # Create a new message (POST request)
 curl -X POST http://localhost:3000/api/threads/123e4567-e89b-12d3-a456-426614174000/messages \
