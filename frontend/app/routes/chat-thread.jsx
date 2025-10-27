@@ -72,8 +72,7 @@ export async function clientLoader({ params }) {
 }
 
 export async function clientAction({ params, request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const formData = await request.formData();
   const content = formData.get("message");
@@ -83,21 +82,26 @@ export async function clientAction({ params, request }) {
   }
 
   const newMessage = {
-    thread_id: params.threadId,
     type: "user",
     content: content.trim(),
   };
 
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-      method: "POST",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${apiUrl}/api/threads/${params.threadId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMessage),
       },
-      body: JSON.stringify(newMessage),
-    });
+    );
+
+    if (response.status === 400) {
+      const error = await response.json();
+      return { error: error.error || "Invalid message data." };
+    }
 
     if (!response.ok) {
       return { error: `Failed to create message: ${response.status}` };
