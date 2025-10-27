@@ -33,6 +33,45 @@ app.get("/api/threads", async (req, res) => {
   }
 });
 
+app.post("/api/threads/:id/messages", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+    const { type, content } = req.body;
+
+    if (!type || !content) {
+      return res.status(400).json({
+        error: "Both 'type' and 'content' are required.",
+      });
+    }
+
+    if (type !== "user" && type !== "bot") {
+      return res.status(400).json({
+        error: "Type must be either 'user' or 'bot'.",
+      });
+    }
+
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      return res.status(400).json({
+        error: "Content cannot be empty.",
+      });
+    }
+
+    const messages = await sql`
+    INSERT INTO messages (thread_id, type, content)
+    VALUES (${threadId}, ${type}, ${trimmedContent})
+    RETURNING id, thread_id, type, content, created_at
+  `;
+
+    res.status(201).json(messages[0]);
+  } catch (error) {
+    console.error("Error creating message.", error);
+    res.status(500).json({
+      error: "Failed to create message.",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
