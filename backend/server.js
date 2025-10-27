@@ -100,6 +100,56 @@ app.delete("/api/threads/:id", async (req, res) => {
   }
 });
 
+app.post("/api/threads", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        error: "Both 'title' and 'content' are required.",
+      });
+    }
+
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty.",
+      });
+    }
+
+    const trimmedContent = content.trim();
+    if (trimmedContent.length === 0) {
+      return res.status(400).json({
+        error: "Content cannot be empty.",
+      });
+    }
+
+    const threads = await sql`
+      INSERT INTO threads (title)
+      VALUES (${trimmedTitle})
+      RETURNING id, title, created_at
+    `;
+
+    const thread = threads[0];
+
+    const messages = await sql`
+      INSERT INTO messages (thread_id, type, content)
+      VALUES (${thread.id}, 'user', ${trimmedContent})
+      RETURNING id, thread_id, type, content, created_at
+    `;
+
+    res.status(201).json({
+      thread: thread,
+      message: messages[0],
+    });
+  } catch (error) {
+    console.error("Error creating thread.", error);
+    res.status(500).json({
+      error: "Failed to create thread.",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
