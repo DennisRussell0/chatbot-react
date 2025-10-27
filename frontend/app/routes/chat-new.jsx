@@ -2,8 +2,7 @@ import { ChatMessages, ChatInput } from "../components/Chat.jsx";
 import { redirect, useActionData } from "react-router";
 
 export async function clientAction({ request }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const formData = await request.formData();
   const content = formData.get("message");
@@ -18,43 +17,29 @@ export async function clientAction({ request }) {
       : content.trim();
 
   try {
-    const threadResponse = await fetch(`${supabaseUrl}/rest/v1/threads`, {
+    const response = await fetch(`${apiUrl}/api/threads`, {
       method: "POST",
       headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
         "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify({ title }),
-    });
-
-    if (!threadResponse.ok) {
-      return { error: `Failed to create thread: ${threadResponse.status}` };
-    }
-
-    const [thread] = await threadResponse.json();
-
-    const messageResponse = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-      method: "POST",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
       },
       body: JSON.stringify({
-        thread_id: thread.id,
-        type: "user",
+        title: title,
         content: content.trim(),
       }),
     });
 
-    if (!messageResponse.ok) {
-      return { error: `Failed to create message: ${messageResponse.status}` };
+    if (response.status === 400) {
+      const error = await response.json();
+      return { error: error.error || "Invalid thread data." };
     }
 
-    return redirect(`/chat/${thread.id}`);
+    if (!response.ok) {
+      return { error: `Failed to create thread: ${response.status}` };
+    }
+
+    const data = await response.json();
+
+    return redirect(`/chat/${data.thread.id}`);
   } catch (error) {
     return { error: error.message };
   }
