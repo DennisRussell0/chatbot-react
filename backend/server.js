@@ -72,6 +72,34 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
+app.delete("/api/threads/:id", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    const result = await sql`
+      DELETE FROM threads
+      WHERE id = ${threadId}
+      RETURNING id
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found.",
+      });
+    }
+
+    res.status(200).json({
+      message: "Thread deleted successfully.",
+      deleteId: result[0].id,
+    });
+  } catch (error) {
+    console.error("Error deleting thread.", error);
+    res.status(500).json({
+      error: "Failed to delete thread.",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
