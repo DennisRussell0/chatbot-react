@@ -72,34 +72,6 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
-app.delete("/api/threads/:id", async (req, res) => {
-  try {
-    const threadId = req.params.id;
-
-    const result = await sql`
-      DELETE FROM threads
-      WHERE id = ${threadId}
-      RETURNING id
-    `;
-
-    if (result.length === 0) {
-      return res.status(404).json({
-        error: "Thread not found.",
-      });
-    }
-
-    res.status(200).json({
-      message: "Thread deleted successfully.",
-      deleteId: result[0].id,
-    });
-  } catch (error) {
-    console.error("Error deleting thread.", error);
-    res.status(500).json({
-      error: "Failed to delete thread.",
-    });
-  }
-});
-
 app.post("/api/threads", async (req, res) => {
   try {
     const { title, content } = req.body;
@@ -146,6 +118,74 @@ app.post("/api/threads", async (req, res) => {
     console.error("Error creating thread.", error);
     res.status(500).json({
       error: "Failed to create thread.",
+    });
+  }
+});
+
+app.patch("/api/threads/:id", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).json({
+        error: "Title is required.",
+      });
+    }
+
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) {
+      return res.status(400).json({
+        error: "Title cannot be empty.",
+      });
+    }
+
+    const result = await sql`
+      UPDATE threads
+      SET title = ${trimmedTitle}
+      WHERE id = ${threadId}
+      RETURNING id, title, created_at
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found.",
+      });
+    }
+
+    res.status(200).json(result[0]);
+  } catch (error) {
+    console.error("Error updating thread.", error);
+    res.status(500).json({
+      error: "Failed to update thread.",
+    });
+  }
+});
+
+app.delete("/api/threads/:id", async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    const result = await sql`
+      DELETE FROM threads
+      WHERE id = ${threadId}
+      RETURNING id
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found.",
+      });
+    }
+
+    res.status(200).json({
+      message: "Thread deleted successfully.",
+      deleteId: result[0].id,
+    });
+  } catch (error) {
+    console.error("Error deleting thread.", error);
+    res.status(500).json({
+      error: "Failed to delete thread.",
     });
   }
 });
