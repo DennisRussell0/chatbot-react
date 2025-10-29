@@ -8,4 +8,6 @@ export default [
       route("edit", "routes/chat-thread-edit.jsx"),
     ]),
   ]),
+  route("login", "routes/login.jsx"),
+  route("register", "routes/register.jsx"),
 ];
