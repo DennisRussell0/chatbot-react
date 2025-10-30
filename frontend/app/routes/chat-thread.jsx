@@ -7,6 +7,7 @@ import {
   Outlet,
 } from "react-router";
 import { ChatMessages, ChatInput } from "../components/Chat.jsx";
+import { apiFetch } from "../lib/apiFetch.js";
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -31,50 +32,33 @@ export function ErrorBoundary() {
 }
 
 export async function clientLoader({ params }) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const threadResponse = await apiFetch(`/api/threads/${params.threadId}`);
 
-  const threadUrl = `${supabaseUrl}/rest/v1/threads?id=eq.${params.threadId}&select=*`;
-
-  const threadResponse = await fetch(threadUrl, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-  });
+  if (threadResponse.status === 404) {
+    throw new Response("Thread not found", { status: 404 });
+  }
 
   if (!threadResponse.ok) {
     throw new Error(`Failed to fetch thread: ${threadResponse.status}`);
   }
 
-  const threadData = await threadResponse.json();
-  const thread = threadData[0];
+  const thread = await threadResponse.json();
 
-  if (!thread) {
-    throw new Response("Thread not found", { status: 404 });
-  }
-
-  const messagesUrl = `${supabaseUrl}/rest/v1/messages?thread_id=eq.${params.threadId}&select=*&order=created_at.asc`;
-
-  const messagesResponse = await fetch(messagesUrl, {
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${supabaseKey}`,
-    },
-  });
+  const messagesResponse = await apiFetch(
+    `/api/threads/${params.threadId}/messages`,
+  );
 
   if (!messagesResponse.ok) {
     throw new Error(`Failed to fetch messages: ${messagesResponse.status}`);
   }
-
   const messages = await messagesResponse.json();
-
-  return { thread, messages };
+  return {
+    thread,
+    messages,
+  };
 }
 
 export async function clientAction({ params, request }) {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   const formData = await request.formData();
   const content = formData.get("message");
 
@@ -88,8 +72,8 @@ export async function clientAction({ params, request }) {
   };
 
   try {
-    const response = await fetch(
-      `${apiUrl}/api/threads/${params.threadId}/messages`,
+    const response = await apiFetch(
+      `/api/threads/${params.threadId}/messages`,
       {
         method: "POST",
         headers: {

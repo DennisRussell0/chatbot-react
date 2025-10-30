@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { href, Link, NavLink, useFetcher } from "react-router";
+import { useEffect, useState } from "react";
+import { href, Link, NavLink, useFetcher, Form } from "react-router";
+import { supabase } from "../lib/supabase.js";
 
 function SidebarHeader() {
   return (
@@ -26,8 +27,8 @@ function ChatThreadItem({ thread }) {
           className={({ isActive, isPending }) =>
             [
               "chat-thread-link",
-              isActive && "chat-thread-link chat-thread-link-active",
-              isPending && "chat-thread-link chat-thread-link-pending",
+              isActive && "chat-thread-link-active",
+              isPending && "chat-thread-link-pending",
             ]
               .filter(Boolean)
               .join(" ")
@@ -85,23 +86,48 @@ function ChatThreadList({ threads = [] }) {
 }
 
 function SidebarFooter() {
+  const [userEmail, setUserEmail] = useState(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserEmail(session.user.email);
+      }
+    };
+    getUser();
+  }, []);
+
   return (
     <div className="sidebar-footer">
-      <a href="/profile" className="user-profile">
+      <div className="user-profile">
         <img
-          src="https://ui-avatars.com/api/?name=Batman&background=0D0D0D&color=fff&size=40"
+          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userEmail || "User")}&background=0D0D0D&color=fff&size=40`}
           alt="User avatar"
           className="user-avatar"
           width={30}
           height={30}
         />
-        <span className="user-name">Batman</span>
-      </a>
+        <span className="user-name">{userEmail || "Loading..."}</span>
+      </div>
+      <Form method="post">
+        <button
+          type="submit"
+          name="intent"
+          value="logout"
+          className="logout-btn"
+          title="Log out"
+        >
+          ×
+        </button>
+      </Form>
     </div>
   );
 }
 
-export default function Sidebar({ threads, onDeleteThread }) {
+export default function Sidebar({ threads }) {
   return (
     <aside className="sidebar">
       <SidebarHeader />

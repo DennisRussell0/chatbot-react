@@ -1,12 +1,9 @@
 import { useLoaderData, Outlet } from "react-router";
 import Sidebar from "../components/Sidebar.jsx";
+import { apiFetch } from "../lib/apiFetch.js";
 
 export async function clientLoader() {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
-  const url = `${apiUrl}/api/threads`;
-
-  const response = await fetch(url);
+  const response = await apiFetch("/api/threads");
 
   if (!response.ok) {
     throw new Error(`Failed to fetch threads: ${response.status}`);
@@ -26,7 +23,7 @@ export async function clientAction({ request }) {
 
   if (intent === "delete" && threadId) {
     try {
-      const response = await fetch(`${apiUrl}/api/threads/${threadId}`, {
+      const response = await apiFetch(`/api/threads/${threadId}`, {
         method: "DELETE",
       });
 
