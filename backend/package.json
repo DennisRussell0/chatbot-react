@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "Express API for chatbot application",
   "dependencies": {
+    "@supabase/supabase-js": "^2.78.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "postgres": "^3.4.7"
