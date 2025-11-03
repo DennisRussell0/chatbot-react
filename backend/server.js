@@ -116,6 +116,18 @@ app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
       });
     }
 
+    const threads = await sql`
+      SELECT id 
+      FROM threads 
+      WHERE id = ${threadId} AND user_id = ${req.userId}
+    `;
+
+    if (threads.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
     const messages = await sql`
     INSERT INTO messages (thread_id, type, content)
     VALUES (${threadId}, ${type}, ${trimmedContent})
@@ -202,8 +214,8 @@ app.patch("/api/threads/:id", requireAuth, async (req, res) => {
     const result = await sql`
       UPDATE threads
       SET title = ${trimmedTitle}
-      WHERE id = ${threadId}
-      RETURNING id, title, created_at
+      WHERE id = ${threadId} AND user_id = ${req.userId}
+      RETURNING id, title, user_id, created_at
     `;
 
     if (result.length === 0) {
@@ -227,7 +239,7 @@ app.delete("/api/threads/:id", requireAuth, async (req, res) => {
 
     const result = await sql`
       DELETE FROM threads
-      WHERE id = ${threadId}
+      WHERE id = ${threadId} AND user_id = ${req.userId}
       RETURNING id
     `;
 
