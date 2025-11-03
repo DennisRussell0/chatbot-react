@@ -1,18 +1,12 @@
+import { redirect } from "react-router";
 import { supabase } from "./supabase.js";
 
 export async function apiFetch(path, options = {}) {
-  // Allow a configured API URL via VITE_API_URL, but fall back to the
-  // local backend default used by this project (http://localhost:3000)
-  // so the client doesn't accidentally hit the Vite dev server (which
-  // would return 404 for API routes).
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  // Ensure path is properly combined: path should start with a leading '/'
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const url = `${apiUrl.replace(/\/$/, "")}${normalizedPath}`;
 
-  // Helpful debug log while developing
-  // eslint-disable-next-line no-console
   console.debug("apiFetch ->", url, options?.method || "GET");
 
   const {
@@ -30,8 +24,14 @@ export async function apiFetch(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
+
+  if (response.status === 401) {
+    throw redirect("/login");
+  }
+
+  return response;
 }
