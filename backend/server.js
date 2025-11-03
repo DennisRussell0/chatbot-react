@@ -145,9 +145,9 @@ app.post("/api/threads", requireAuth, async (req, res) => {
     }
 
     const threads = await sql`
-      INSERT INTO threads (title)
-      VALUES (${trimmedTitle})
-      RETURNING id, title, created_at
+      INSERT INTO threads (title, user_id)
+      VALUES (${trimmedTitle}, ${req.userId})
+      RETURNING id, title, user_id, created_at
     `;
 
     const thread = threads[0];
