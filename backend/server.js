@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import sql from "./db.js";
+import { requireAuth } from "./auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,7 +16,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/threads", async (req, res) => {
+app.get("/api/threads", requireAuth, async (req, res) => {
   try {
     const threads = await sql`
       SELECT id, title, created_at
@@ -33,7 +34,54 @@ app.get("/api/threads", async (req, res) => {
   }
 });
 
-app.post("/api/threads/:id/messages", async (req, res) => {
+app.get("/api/threads/:id", requireAuth, async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    const threads = await sql`
+      SELECT id, title, created_at 
+      FROM threads 
+      WHERE id = ${threadId}
+    `;
+
+    if (threads.length === 0) {
+      return res.status(404).json({
+        error: "Thread not found",
+      });
+    }
+
+    res.json(threads[0]);
+  } catch (error) {
+    console.error("Error fetching thread:", error);
+
+    res.status(500).json({
+      error: "Failed to fetch thread from database",
+    });
+  }
+});
+
+app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
+  try {
+    const threadId = req.params.id;
+
+    const messages = await sql`
+      SELECT id, thread_id, type, content, created_at 
+      FROM messages 
+      WHERE thread_id = ${threadId}
+      ORDER BY created_at ASC
+    `;
+
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+
+    res.status(500).json({
+      error: "Failed to fetch messages from database",
+    });
+  }
+});
+
+app.post("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
     const { type, content } = req.body;
@@ -72,7 +120,7 @@ app.post("/api/threads/:id/messages", async (req, res) => {
   }
 });
 
-app.post("/api/threads", async (req, res) => {
+app.post("/api/threads", requireAuth, async (req, res) => {
   try {
     const { title, content } = req.body;
 
@@ -122,7 +170,7 @@ app.post("/api/threads", async (req, res) => {
   }
 });
 
-app.patch("/api/threads/:id", async (req, res) => {
+app.patch("/api/threads/:id", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
     const { title } = req.body;
@@ -162,7 +210,7 @@ app.patch("/api/threads/:id", async (req, res) => {
   }
 });
 
-app.delete("/api/threads/:id", async (req, res) => {
+app.delete("/api/threads/:id", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
 

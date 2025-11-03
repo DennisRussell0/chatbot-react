@@ -16,8 +16,6 @@ export async function clientLoader() {
 }
 
 export async function clientAction({ request }) {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   const formData = await request.formData();
   const intent = formData.get("intent");
 
