@@ -40,9 +40,9 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
     const threadId = req.params.id;
 
     const threads = await sql`
-      SELECT id, title, created_at 
+      SELECT id, title, user_id, created_at 
       FROM threads 
-      WHERE id = ${threadId}
+      WHERE id = ${threadId} AND user_id = ${req.userId}
     `;
 
     if (threads.length === 0) {
@@ -64,6 +64,16 @@ app.get("/api/threads/:id", requireAuth, async (req, res) => {
 app.get("/api/threads/:id/messages", requireAuth, async (req, res) => {
   try {
     const threadId = req.params.id;
+
+    const threads = await sql`
+      SELECT id 
+      FROM threads 
+      WHERE id = ${threadId} AND user_id = ${req.userId}
+    `;
+
+    if (threads.length === 0) {
+      return res.json([]);
+    }
 
     const messages = await sql`
       SELECT id, thread_id, type, content, created_at 
